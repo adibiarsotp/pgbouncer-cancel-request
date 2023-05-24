@@ -1,4 +1,4 @@
-run_pgbouncer:
+run_pgbouncer_tester:
 	@go run main.go
 
 run_odyssey:
@@ -7,4 +7,4 @@ run_odyssey:
 test_stats:
 	./tests/test_stats.sh
 
-PHONY: run_pgbouncer run_odyssey test_stats
+PHONY: run_pgbouncer_tester run_odyssey test_stats

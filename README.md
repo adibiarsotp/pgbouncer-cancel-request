@@ -1,67 +1,29 @@
 Cancel requests outage pgbouncer
 ================================
 
+forked from https://github.com/chobostar/pgbouncer-cancel-request, with modification put webserver and context timeout passed from client 
+
 Usage:
+
 ```
-$ go get github.com/chobostar/pgbouncer-cancel-request
-$ cd ~/go/src/github.com/chobostar/pgbouncer-cancel-request
+$ go get github.com/adibiarsotp/pgbouncer-cancel-request
+$ cd ~/go/src/github.com/adibiarsotp/pgbouncer-cancel-request
 $ docker-compose up -d
-$ make run_pgbouncer
+$ make run_pgbouncer_tester
 ```
 
 Check `used_clients`:
+
 ```
 $ psql -h localhost -p 6432 -U pgbouncer -c "show lists" | grep 'used_clients'
 ```
 
-Ensure that connections are not available:
+After several minutes (example 5 minutes), we can stop the script, and recheck used clients. the number will not reset,
+and we will unable to enter the db.
+
 ```
 $ psql -h localhost -p 6432 -U postgres -d db
 psql: ERROR:  no more connections allowed (max_client_conn)
 ```
 
-#### Odyssey
-
-```
-$ make run_odyssey
-```
-
-and it's okay
-
-## Check stats output diffs
-
-```
-$ make test_stats
-```
-
-## Check killed client
-
-1. Start 3 queries:
-- first:
-```
-$ PGAPPNAME=pgbouncer psql -U postgres -p 6432 -h localhost -d db -c "select pg_sleep(3600)"
-```
-- second:
-```
-$ PGAPPNAME=odyssey psql -U postgres -p 6532 -h localhost -d db -c "select pg_sleep(3600)"
-```
-- third:
-```
-$ PGAPPNAME=psql psql -U postgres -p 5432 -h localhost -d postgres -c "select pg_sleep(3600)"
-```
-
-2. Kill both
-```
-$ kill $(ps aux | grep '[p]sql' | awk '{print $2}')
-```
-
-3. Check active backends:
-```
-$ psql -U postgres -h localhost -c "select application_name from pg_stat_activity where state != 'idle' and pid != pg_backend_pid()"
-
- application_name 
-------------------
- pgbouncer
- psql
-(2 rows)
-```
+We can change the pgbouncer version in docker-compose.yml to test fixed version pgbouncer >= 1.16. dont forget to rebuild the docker image.
